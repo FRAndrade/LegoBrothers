@@ -1,55 +1,66 @@
-
-
-
+#!/usr/bin/env python3
 from ev3dev2.sensor import *
+from ev3dev2.motor import *
+from ev3dev2.sensor.lego import *
+from ev3dev2.button import *
 from ev3dev.ev3 import *
 from time import sleep
 
-velo_rot=500
-us = UltrasonicSensor('in1')
-us1 = UltrasonicSensor('in2')
-ts = TouchSensor('in3')
-units = us.units
-# reports 'cm' even though the sensor measures 'mm'
-
+#define variables
+butt = Button()
 mA = LargeMotor(OUTPUT_A)
 mB = LargeMotor(OUTPUT_B)
 mC = LargeMotor(OUTPUT_C)
+mD = LargeMotor(OUTPUT_D)
+us = UltrasonicSensor('in1')
+us1 = UltrasonicSensor('in2')
+units = us1.units
+
 while True:
-        while not ts.value():
-                print("Waiting")
-        Sound.beep()
-        sleep(5)
-        while not ts.value():
+        while not butt.any(): ### wait for button press to begin
+                print("Esperando")
+
+
+        sleep(5) #### standard wait time for robot competitions
+
+        mA.run_forever(speed_sp=750)
+        mB.run_forever(speed_sp=750)
+
+        sleep(0.5)
+        mA.run_forever(speed_sp=0)
+        mB.run_forever(speed_sp=0)
+        sleep(0.1)
+
+        while not butt.any():
+                mC.run_forever(speed_sp=-900)
+                mD.run_forever(speed_sp=-900)
+
                 distance = us.value()/10  # convert mm to cm
                 distance1 = us1.value()/10  # convert mm to cm
-                print("This is ONE" + str(distance) + " " + units)
-                print("This is TWO" + str(distance1) + " " + units)
+                print("This is sensor ONE " + str(distance) + " " + units)
+                print("This is sensor TWO " + str(distance1) + " " + units)
+
                 if distance < 40 or distance1 < 40:
-                        difference = distance  - distance1
-                        if difference > 20: #check if distance(error) is more to the left or to the right
+                        diferenca = distance  - distance1
+                        if diferenca > 20: #vamos ver para quais valores eh esquerd
                                 mA.run_forever(speed_sp=-500)
                                 mB.run_forever(speed_sp=500)
-                                mC.run_forever(speed_sp=500)
                                 print("Turn LEFT")
-                        elif difference < -20: 
+                        elif diferenca < -20: #vamos ver para quais valores eh diret
                                 mA.run_forever(speed_sp=500)
                                 mB.run_forever(speed_sp=-500)
-                                mC.run_forever(speed_sp=500)
                                 print("Turn RIGHT")
                         else:
-                                mA.run_forever(speed_sp=-900)
-                                mB.run_forever(speed_sp=-900)
-                                mC.run_forever(speed_sp=900)
-                                print("Forwards")
+                                mA.run_forever(speed_sp=-800)
+                                mB.run_forever(speed_sp=-800)
+                                print("Forward")
                 else:
-                        mA.run_forever(speed_sp=500) 
+                        mA.run_forever(speed_sp=500)
                         mB.run_forever(speed_sp=-500)
-                        mC.run_forever(speed_sp=500)
-                        print("Searching")
+                        print("Search")
                 sleep(0.5)
-        mA.run_forever(speed_sp=0) #stops everything. pretty sure this block can be improved
+        mA.run_forever(speed_sp=0)
         mB.run_forever(speed_sp=0)
         mC.run_forever(speed_sp=0)
-
-
+        mD.run_forever(speed_sp=0)
+        print("Stop")
